@@ -1,19 +1,22 @@
 import { BrowserRouter, Routes, Route, Link, Navigate, useNavigate } from 'react-router-dom'
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import PortalPacientes from './pages/PortalPacientes'
 import PanelAdmin from './pages/PanelAdmin'
 import GestionPacientes from './pages/GestionPacientes'
 import Dashboard from './pages/Dashboard'
+import Login from './pages/Login'
 
 function NavBar({ rol, setRol }: { rol: string, setRol: (r: string) => void }) {
   const navigate = useNavigate()
 
-  const cambiarRol = (nuevoRol: string) => {
-    setRol(nuevoRol)
-    if (nuevoRol === 'admin') navigate('/admin')
-    if (nuevoRol === 'paciente') navigate('/portal')
-    if (nuevoRol === 'medico') navigate('/dashboard')
+  const cerrarSesion = () => {
+    setRol('')
+    navigate('/')
   }
+
+  const nombreRol = rol === 'admin' ? 'Administrativo'
+    : rol === 'medico' ? 'Médico'
+    : 'Paciente'
 
   return (
     <nav>
@@ -22,55 +25,62 @@ function NavBar({ rol, setRol }: { rol: string, setRol: (r: string) => void }) {
           RedNorte
         </span>
 
-        <select
-          title="Seleccionar rol"
-          value={rol}
-          onChange={e => cambiarRol(e.target.value)}
-          style={{
-            padding: '0.3rem 0.6rem',
-            borderRadius: '6px',
-            border: 'none',
-            fontSize: '14px',
-            cursor: 'pointer'
-          }}
-        >
-          <option value="admin">Administrativo</option>
-          <option value="paciente">Paciente</option>
-          <option value="medico">Médico</option>
-        </select>
-
         {rol === 'paciente' && (
           <Link to="/portal">Portal Pacientes</Link>
         )}
-
         {rol === 'admin' && (
           <>
             <Link to="/admin">Panel Admin</Link>
             <Link to="/pacientes">Gestión Pacientes</Link>
           </>
         )}
-
         {rol === 'medico' && (
           <Link to="/dashboard">Dashboard</Link>
         )}
+      </div>
+
+      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+        <span style={{ color: '#9FE1CB', fontSize: '13px' }}>
+          {nombreRol}
+        </span>
+        <button
+          onClick={cerrarSesion}
+          style={{
+            padding: '0.3rem 0.8rem',
+            background: 'transparent',
+            color: 'white',
+            border: '1px solid #0D9488',
+            borderRadius: '6px',
+            fontSize: '13px',
+            cursor: 'pointer'
+          }}
+        >
+          Cerrar sesión
+        </button>
       </div>
     </nav>
   )
 }
 
 function App() {
-  const [rol, setRol] = useState('admin')
+  const [rol, setRol] = useState('')
 
   return (
     <BrowserRouter>
-      <NavBar rol={rol} setRol={setRol} />
-<Routes>
-  <Route path="/portal" element={<PortalPacientes />} />
-  <Route path="/admin" element={<PanelAdmin />} />
-  <Route path="/pacientes" element={<GestionPacientes />} />
-  <Route path="/dashboard" element={<Dashboard />} />
-  <Route path="/" element={<Navigate to="/admin" />} />
-</Routes>
+      {rol && <NavBar rol={rol} setRol={setRol} />}
+      <Routes>
+        <Route path="/" element={
+          rol ? (
+            rol === 'admin' ? <Navigate to="/admin" />
+            : rol === 'medico' ? <Navigate to="/dashboard" />
+            : <Navigate to="/portal" />
+          ) : <Login setRol={setRol} />
+        } />
+        <Route path="/portal" element={rol ? <PortalPacientes /> : <Navigate to="/" />} />
+        <Route path="/admin" element={rol ? <PanelAdmin /> : <Navigate to="/" />} />
+        <Route path="/pacientes" element={rol ? <GestionPacientes /> : <Navigate to="/" />} />
+        <Route path="/dashboard" element={rol ? <Dashboard /> : <Navigate to="/" />} />
+      </Routes>
     </BrowserRouter>
   )
 }
