@@ -20,20 +20,25 @@ export default function PortalPacientes() {
   const [loading, setLoading] = useState(false)
   const [busquedaId, setBusquedaId] = useState('')
 
-  const buscarPaciente = () => {
+const [buscado, setBuscado] = useState(false)
+
+    const buscarPaciente = () => {
     if (!busquedaId) return
     setLoading(true)
+    setBuscado(false)
     axios.get(`${BFF_URL}/portal/estado/${busquedaId}`)
-      .then(res => {
+        .then(res => {
         setFicha(res.data.ficha)
         setTotalEnEspera(res.data.totalEnEspera)
         setLoading(false)
-      })
-      .catch(() => {
+        setBuscado(true)
+        })
+        .catch(() => {
         setFicha(null)
         setLoading(false)
-      })
-  }
+        setBuscado(true)
+        })
+    }
 
   return (
     <div style={{ padding: '2rem' }}>
@@ -68,10 +73,9 @@ export default function PortalPacientes() {
           <p><strong>Total pacientes en espera:</strong> {totalEnEspera}</p>
         </div>
       )}
-
-      {!loading && !ficha && busquedaId && (
-        <p>No se encontró información para ese ID</p>
-      )}
+{!loading && !ficha && buscado && (
+  <p>No se encontró información para ese ID</p>
+)}
     </div>
   )
 }
