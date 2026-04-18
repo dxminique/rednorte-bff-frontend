@@ -25,7 +25,7 @@ export default function PortalPacientes() {
     if (!busquedaId) return
     setLoading(true)
     setBuscado(false)
-    axios.get(`${BFF_URL}/portal/estado/${busquedaId}`)
+    axios.get(`${BFF_URL}/portal/rut/${busquedaId}`)
       .then(res => {
         setFicha(res.data.ficha)
         setTotalEnEspera(res.data.totalEnEspera)
@@ -45,8 +45,8 @@ export default function PortalPacientes() {
 
       <div className="form-row" style={{ marginTop: '1rem' }}>
         <input
-          type="number"
-          placeholder="Ingresa tu ID de paciente"
+          type="text"
+          placeholder="Ingresa tu RUT (ej: 12345678-9)"
           value={busquedaId}
           onChange={e => setBusquedaId(e.target.value)}
           style={{ width: '250px' }}
@@ -75,7 +75,7 @@ export default function PortalPacientes() {
 
       {!loading && !ficha && buscado && (
         <p style={{ marginTop: '1rem', color: '#E24B4A' }}>
-          No se encontró información para ese ID
+          No se encontró información para ese RUT
         </p>
       )}
     </div>

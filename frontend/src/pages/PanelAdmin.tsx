@@ -14,11 +14,18 @@ interface Paciente {
   fechaIngreso: string
 }
 
+interface PacienteDisponible {
+  id: number
+  nombre: string
+  apellido: string
+  rut: string
+}
+
 export default function PanelAdmin() {
   const [pacientes, setPacientes] = useState<Paciente[]>([])
   const [totalEnEspera, setTotalEnEspera] = useState<number>(0)
   const [loading, setLoading] = useState(true)
-  const [pacientesDisponibles, setPacientesDisponibles] = useState<Paciente[]>([])
+  const [pacientesDisponibles, setPacientesDisponibles] = useState<PacienteDisponible[]>([])
 
   const [form, setForm] = useState({
     pacienteId: '',
@@ -31,14 +38,20 @@ export default function PanelAdmin() {
       .then(res => {
         setPacientes(res.data.pacientes)
         setTotalEnEspera(res.data.totalEnEspera)
-        setPacientesDisponibles(res.data.pacientes)
         setLoading(false)
       })
       .catch(() => setLoading(false))
   }
 
+  const cargarPacientes = () => {
+    axios.get(`${BFF_URL}/admin/pacientes`)
+      .then(res => setPacientesDisponibles(res.data))
+      .catch(() => console.error('Error al cargar pacientes'))
+  }
+
   useEffect(() => {
     cargarLista()
+    cargarPacientes()
   }, [])
 
   const registrar = () => {
@@ -57,8 +70,8 @@ export default function PanelAdmin() {
         cargarLista()
       })
       .catch((error) => {
-        if (error.response?.status === 500) {
-          alert('El paciente con ese ID no existe en el sistema')
+        if (error.response?.status === 404) {
+          alert('Paciente no encontrado en el sistema')
         } else {
           alert('Error al registrar paciente')
         }
@@ -78,55 +91,82 @@ export default function PanelAdmin() {
   if (loading) return <p>Cargando...</p>
 
   return (
-  <div className="page">
-    <h1>Panel Administrativo — RedNorte</h1>
-    <span className="stat-badge">Total en espera: {totalEnEspera}</span>
+    <div className="page">
+      <h1>Panel Administrativo — RedNorte</h1>
+      <span className="stat-badge">Total en espera: {totalEnEspera}</span>
 
-    <h2>Registrar nuevo paciente</h2>
-    <div className="form-row">
-      <select title="Seleccionar paciente" value={form.pacienteId}
-        onChange={e => setForm({ ...form, pacienteId: e.target.value })}>
-        <option value="">Seleccionar paciente</option>
-        {pacientesDisponibles.map(p => (
-          <option key={p.id} value={p.id}>{p.id} - {p.pacienteNombre}</option>
-        ))}
-      </select>
-      <select title="Tipo de atención" value={form.tipoAtencion}
-        onChange={e => setForm({ ...form, tipoAtencion: e.target.value })}>
-        <option value="CONSULTA">Consulta</option>
-        <option value="CIRUGIA">Cirugía</option>
-        <option value="URGENCIA_DIFERIDA">Urgencia diferida</option>
-      </select>
-      <input type="text" placeholder="Especialidad" value={form.especialidad}
-        onChange={e => setForm({ ...form, especialidad: e.target.value })} />
-      <button className="btn-primary" onClick={registrar}>Registrar</button>
-    </div>
-    <p className="hint">* Solo puedes registrar pacientes que ya existen en el sistema</p>
+      <h2>Registrar nuevo paciente</h2>
+      <div className="form-row">
+        <select
+          title="Seleccionar paciente"
+          value={form.pacienteId}
+          onChange={e => setForm({ ...form, pacienteId: e.target.value })}
+        >
+          <option value="">Seleccionar paciente</option>
+          {pacientesDisponibles.map(p => (
+            <option key={p.id} value={p.id}>
+              {p.id} - {p.nombre} {p.apellido}
+            </option>
+          ))}
+        </select>
 
-    <h2>Lista de espera</h2>
-    <table>
-      <thead>
-        <tr>
-          <th>ID</th><th>Nombre</th><th>RUT</th><th>Tipo</th>
-          <th>Especialidad</th><th>Prioridad</th><th>Estado</th>
-          <th>Fecha ingreso</th><th>Acción</th>
-        </tr>
-      </thead>
-      <tbody>
-        {pacientes.map(p => (
-          <tr key={p.id}>
-            <td>{p.id}</td>
-            <td>{p.pacienteNombre}</td>
-            <td>{p.pacienteRut}</td>
-            <td>{p.tipoAtencion}</td>
-            <td>{p.especialidad}</td>
-            <td>{p.prioridad}</td>
-            <td><span className="badge-espera">{p.estado}</span></td>
-            <td>{p.fechaIngreso}</td>
-            <td><button className="btn-danger" onClick={() => cancelar(p.id)}>Cancelar</button></td>
+        <select
+          title="Tipo de atención"
+          value={form.tipoAtencion}
+          onChange={e => setForm({ ...form, tipoAtencion: e.target.value })}
+        >
+          <option value="CONSULTA">Consulta</option>
+          <option value="CIRUGIA">Cirugía</option>
+          <option value="URGENCIA_DIFERIDA">Urgencia diferida</option>
+        </select>
+
+        <input
+          type="text"
+          placeholder="Especialidad"
+          value={form.especialidad}
+          onChange={e => setForm({ ...form, especialidad: e.target.value })}
+        />
+
+        <button className="btn-primary" onClick={registrar}>
+          Registrar
+        </button>
+      </div>
+
+      <h2>Lista de espera</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>RUT</th>
+            <th>Tipo</th>
+            <th>Especialidad</th>
+            <th>Prioridad</th>
+            <th>Estado</th>
+            <th>Fecha ingreso</th>
+            <th>Acción</th>
           </tr>
-        ))}
-      </tbody>
-    </table>
-  </div>
-)}
+        </thead>
+        <tbody>
+          {pacientes.map(p => (
+            <tr key={p.id}>
+              <td>{p.id}</td>
+              <td>{p.pacienteNombre}</td>
+              <td>{p.pacienteRut}</td>
+              <td>{p.tipoAtencion}</td>
+              <td>{p.especialidad}</td>
+              <td>{p.prioridad}</td>
+              <td><span className="badge-espera">{p.estado}</span></td>
+              <td>{p.fechaIngreso}</td>
+              <td>
+                <button className="btn-danger" onClick={() => cancelar(p.id)}>
+                  Cancelar
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )
+}
