@@ -49,10 +49,16 @@ export default function PanelAdmin() {
       .catch(() => console.error('Error al cargar pacientes'))
   }
 
-  useEffect(() => {
+useEffect(() => {
+  cargarLista()
+  cargarPacientes()
+
+  const intervalo = setInterval(() => {
     cargarLista()
-    cargarPacientes()
-  }, [])
+  }, 30000)
+
+  return () => clearInterval(intervalo)
+}, [])
 
   const registrar = () => {
     if (!form.pacienteId || !form.especialidad) {
