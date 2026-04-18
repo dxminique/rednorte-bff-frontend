@@ -78,96 +78,55 @@ export default function PanelAdmin() {
   if (loading) return <p>Cargando...</p>
 
   return (
-    <div style={{ padding: '2rem' }}>
-      <h1>Panel Administrativo — RedNorte</h1>
-      <p><strong>Total en espera:</strong> {totalEnEspera}</p>
+  <div className="page">
+    <h1>Panel Administrativo — RedNorte</h1>
+    <span className="stat-badge">Total en espera: {totalEnEspera}</span>
 
-      <h2>Registrar nuevo paciente</h2>
-      <div style={{ marginBottom: '1rem' }}>
-
-        <select
-          title="Seleccionar paciente"
-          value={form.pacienteId}
-          onChange={e => setForm({ ...form, pacienteId: e.target.value })}
-          style={{ padding: '0.5rem', marginRight: '0.5rem' }}
-        >
-          <option value="">Seleccionar paciente</option>
-          {pacientesDisponibles.map(p => (
-            <option key={p.id} value={p.id}>
-              {p.id} - {p.pacienteNombre}
-            </option>
-          ))}
-        </select>
-
-        <select
-          title="Tipo de atención"
-          value={form.tipoAtencion}
-          onChange={e => setForm({ ...form, tipoAtencion: e.target.value })}
-          style={{ padding: '0.5rem', marginRight: '0.5rem' }}
-        >
-          <option value="CONSULTA">Consulta</option>
-          <option value="CIRUGIA">Cirugía</option>
-          <option value="URGENCIA_DIFERIDA">Urgencia diferida</option>
-        </select>
-
-        <input
-          type="text"
-          placeholder="Especialidad"
-          value={form.especialidad}
-          onChange={e => setForm({ ...form, especialidad: e.target.value })}
-          style={{ padding: '0.5rem', marginRight: '0.5rem', width: '150px' }}
-        />
-
-        <button
-          onClick={registrar}
-          style={{ padding: '0.5rem 1rem', background: '#0D9488', color: 'white', border: 'none', cursor: 'pointer' }}
-        >
-          Registrar
-        </button>
-      </div>
-
-      <p style={{ fontSize: '0.85rem', color: '#888' }}>
-        * Solo puedes registrar pacientes que ya existen en el sistema
-      </p>
-
-      <h2>Lista de espera</h2>
-      <table border={1} cellPadding={8} style={{ width: '100%' }}>
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Nombre</th>
-            <th>RUT</th>
-            <th>Tipo</th>
-            <th>Especialidad</th>
-            <th>Prioridad</th>
-            <th>Estado</th>
-            <th>Fecha ingreso</th>
-            <th>Acción</th>
-          </tr>
-        </thead>
-        <tbody>
-          {pacientes.map(p => (
-            <tr key={p.id}>
-              <td>{p.id}</td>
-              <td>{p.pacienteNombre}</td>
-              <td>{p.pacienteRut}</td>
-              <td>{p.tipoAtencion}</td>
-              <td>{p.especialidad}</td>
-              <td>{p.prioridad}</td>
-              <td>{p.estado}</td>
-              <td>{p.fechaIngreso}</td>
-              <td>
-                <button
-                  onClick={() => cancelar(p.id)}
-                  style={{ padding: '0.3rem 0.6rem', background: '#E24B4A', color: 'white', border: 'none', cursor: 'pointer' }}
-                >
-                  Cancelar
-                </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+    <h2>Registrar nuevo paciente</h2>
+    <div className="form-row">
+      <select title="Seleccionar paciente" value={form.pacienteId}
+        onChange={e => setForm({ ...form, pacienteId: e.target.value })}>
+        <option value="">Seleccionar paciente</option>
+        {pacientesDisponibles.map(p => (
+          <option key={p.id} value={p.id}>{p.id} - {p.pacienteNombre}</option>
+        ))}
+      </select>
+      <select title="Tipo de atención" value={form.tipoAtencion}
+        onChange={e => setForm({ ...form, tipoAtencion: e.target.value })}>
+        <option value="CONSULTA">Consulta</option>
+        <option value="CIRUGIA">Cirugía</option>
+        <option value="URGENCIA_DIFERIDA">Urgencia diferida</option>
+      </select>
+      <input type="text" placeholder="Especialidad" value={form.especialidad}
+        onChange={e => setForm({ ...form, especialidad: e.target.value })} />
+      <button className="btn-primary" onClick={registrar}>Registrar</button>
     </div>
-  )
-}
+    <p className="hint">* Solo puedes registrar pacientes que ya existen en el sistema</p>
+
+    <h2>Lista de espera</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th><th>Nombre</th><th>RUT</th><th>Tipo</th>
+          <th>Especialidad</th><th>Prioridad</th><th>Estado</th>
+          <th>Fecha ingreso</th><th>Acción</th>
+        </tr>
+      </thead>
+      <tbody>
+        {pacientes.map(p => (
+          <tr key={p.id}>
+            <td>{p.id}</td>
+            <td>{p.pacienteNombre}</td>
+            <td>{p.pacienteRut}</td>
+            <td>{p.tipoAtencion}</td>
+            <td>{p.especialidad}</td>
+            <td>{p.prioridad}</td>
+            <td><span className="badge-espera">{p.estado}</span></td>
+            <td>{p.fechaIngreso}</td>
+            <td><button className="btn-danger" onClick={() => cancelar(p.id)}>Cancelar</button></td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+)}
